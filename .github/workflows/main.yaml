@@ -1,6 +1,5 @@
 name: Deploy CNN Flask App to Heroku via Docker
 
-# Trigger workflow on push to main branch
 on:
   push:
     branches:
@@ -11,24 +10,29 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout your code
-      - name: Checkout repository
+      # 1️⃣ Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2️⃣ Log in to Heroku Container Registry
+      # 2️⃣ Install Heroku CLI
+      - name: Install Heroku CLI
+        run: |
+          curl https://cli-assets.heroku.com/install.sh | sh
+
+      # 3️⃣ Log in to Heroku Container Registry
       - name: Heroku Container Registry Login
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
         run: echo $HEROKU_API_KEY | docker login --username=_ --password-stdin registry.heroku.com
 
-      # 3️⃣ Build Docker image
+      # 4️⃣ Build Docker image
       - name: Build Docker Image
         run: docker build -t registry.heroku.com/${{ secrets.HEROKU_APP_NAME }}/web .
 
-      # 4️⃣ Push Docker image to Heroku
+      # 5️⃣ Push Docker image to Heroku
       - name: Push Docker Image
         run: docker push registry.heroku.com/${{ secrets.HEROKU_APP_NAME }}/web
 
-      # 5️⃣ Release the app on Heroku
+      # 6️⃣ Release the app on Heroku
       - name: Release app
         run: heroku container:release web --app ${{ secrets.HEROKU_APP_NAME }}
